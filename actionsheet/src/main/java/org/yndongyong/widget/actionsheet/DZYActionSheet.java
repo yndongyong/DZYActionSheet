@@ -14,6 +14,22 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 
 /**
+ * 使用例子
+ * DZYActionSheet actionSheet = new DZYActionSheet(this);
+ * String[] arrays = {"拍照", "从相册中选择"};
+ * actionSheet.show(this.getWindow().getDecorView(), arrays, new DZYActionSheet.OnDZYActionSheetListener() {
+ *
+ * @Override
+ * public void onClick(String text, int position) {
+ * Toast.makeText(MainActivity.this, "text: " + text + " ,position:" + position, Toast
+ * .LENGTH_SHORT).show();
+ * }
+ * @Override
+ * public void onCancel() {
+ * Toast.makeText(MainActivity.this, "user cancel !", Toast.LENGTH_SHORT).show();
+ * }
+ * });
+ * <p/>
  * Created by Dong on 2016/8/17.
  */
 public class DZYActionSheet {
@@ -32,6 +48,14 @@ public class DZYActionSheet {
      * @param callback
      */
     public void show(View targetView, final String[] arrays, final OnDZYActionSheetListener callback) {
+        //empty check
+        if (arrays == null || arrays.length == 0) {
+            throw new IllegalArgumentException("arrays can not be empty!");
+        }
+        if (callback == null) {
+            throw new UnsupportedOperationException("callback can not be empty!");
+        }
+
         // 加载PopupWindow布局
         View contentView = LayoutInflater.from(mContext).inflate(R.layout.action_sheet_popupwindow, null);
 
@@ -40,7 +64,13 @@ public class DZYActionSheet {
 
         // 设置点击事件
         contentView.findViewById(R.id.id_rootView).setOnClickListener(dismissClickListener);
-        contentView.findViewById(R.id.btn_cancel).setOnClickListener(dismissClickListener);
+        contentView.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callback.onCancel();
+                onDismiss();
+            }
+        });
 
         // 设置动画
         contentView.setAnimation(AnimationUtils.loadAnimation(mContext, R.anim.anim_alpha));
@@ -130,5 +160,7 @@ public class DZYActionSheet {
 
     public interface OnDZYActionSheetListener {
         void onClick(String text, int position);
+
+        void onCancel();
     }
 }

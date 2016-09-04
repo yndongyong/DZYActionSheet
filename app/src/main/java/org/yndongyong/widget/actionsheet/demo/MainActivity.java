@@ -55,6 +55,11 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "text: " + text + " ,position:" + position, Toast
                         .LENGTH_SHORT).show();
             }
+
+            @Override
+            public void onCancel() {
+                Toast.makeText(MainActivity.this, "user cancel !", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
