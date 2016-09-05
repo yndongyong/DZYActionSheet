@@ -5,6 +5,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -13,6 +14,20 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 
 /**
+ * 使用例子
+ * DZYActionSheet actionSheet = new DZYActionSheet(this);
+ * String[] arrays = {"拍照", "从相册中选择"};
+ * actionSheet.show(this.getWindow().getDecorView(), arrays, new DZYActionSheet.OnDZYActionSheetListener() {
+ *
+ * @Override public void onClick(String text, int position) {
+ * Toast.makeText(MainActivity.this, "text: " + text + " ,position:" + position, Toast
+ * .LENGTH_SHORT).show();
+ * }
+ * @Override public void onCancel() {
+ * Toast.makeText(MainActivity.this, "user cancel !", Toast.LENGTH_SHORT).show();
+ * }
+ * });
+ * <p/>
  * Created by Dong on 2016/8/17.
  */
 public class DZYActionSheet {
@@ -32,23 +47,39 @@ public class DZYActionSheet {
      */
     public void show(View targetView, final String[] arrays, final OnDZYActionSheetListener callback) {
 
-        // 加载PopupWindow布局
+        //empty check
+        if (arrays == null || arrays.length == 0) {
+            throw new IllegalArgumentException("arrays can not be null or empty!");
+        }
+        if (callback == null) {
+            throw new UnsupportedOperationException("callback can not be null!");
+        }
+
+        // 加载popupWindow布局
+
         View contentView = LayoutInflater.from(mContext).inflate(R.layout.action_sheet_popupwindow, null);
 
-        // 创建PopupWindow对象
         mPopupWindow = new PopupWindow(contentView, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, true);
 
         // 设置点击事件
         contentView.findViewById(R.id.id_rootView).setOnClickListener(dismissClickListener);
-        contentView.findViewById(R.id.btn_cancel).setOnClickListener(dismissClickListener);
+        contentView.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onDismiss();
+                callback.onCancel();
+            }
+        });
 
         // 设置动画
         contentView.setAnimation(AnimationUtils.loadAnimation(mContext, R.anim.anim_alpha));
         mPopupView = (LinearLayout) contentView.findViewById(R.id.ll_popup);
-        mPopupView.startAnimation(AnimationUtils.loadAnimation(mContext, R.anim.anim_translate_popup_in));
+
+        mPopupView.startAnimation(AnimationUtils.loadAnimation(mContext, R.anim
+                .anim_translate_popup_in));
 
         // 设置数据适配器
-        class MyAdapter extends BaseAdapter {
+        class InnerAdapter extends BaseAdapter {
             @Override
             public int getCount() {
                 return arrays.length;
@@ -81,8 +112,9 @@ public class DZYActionSheet {
                     @Override
                     public void onClick(View v) {
                         String itemStr = arrays[position];
-                        callback.onClick(itemStr, position);
                         onDismiss();
+                        callback.onClick(itemStr, position);
+
                     }
                 });
                 return convertView;
@@ -93,9 +125,8 @@ public class DZYActionSheet {
             }
         }
         mListView = (ListView) contentView.findViewById(R.id.id_listview);
-        mListView.setAdapter(new MyAdapter());
-        
-//        show PopupWindow
+        mListView.setAdapter(new InnerAdapter());
+        // 显示popupWindow
         mPopupWindow.showAtLocation(targetView, Gravity.BOTTOM, 0, 0);
     }
 
@@ -106,13 +137,32 @@ public class DZYActionSheet {
         }
     };
 
-    protected void onDismiss() {
-        if (mPopupWindow != null) {
-            mPopupWindow.dismiss();
-        }
+    private void onDismiss() {
+        mPopupView.startAnimation(AnimationUtils.loadAnimation(mContext, R.anim.anim_translate_popup_out));
+        Animation animation = mPopupView.getAnimation();
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if (mPopupWindow != null) {
+                    mPopupWindow.dismiss();
+                }
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
     }
 
     public interface OnDZYActionSheetListener {
         void onClick(String text, int position);
+
+        void onCancel();
     }
 }

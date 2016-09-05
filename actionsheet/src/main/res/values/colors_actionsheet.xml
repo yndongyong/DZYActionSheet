@@ -7,5 +7,8 @@
     <color name="gray_bg_ripple">#FFF7F7F7</color>
     <color name="gray_bg">#FFEFEFEF</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="item_text_color">#000000</color>
+    <color name="item_text_color">#262626</color>
+
+    <!--背景透明色-->
+    <color name="alpha_30_black">#26000000</color>
 </resources>
